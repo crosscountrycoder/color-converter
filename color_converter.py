@@ -43,7 +43,7 @@ def temp_to_cie(t: float, daylight: bool = False) -> tuple[float, float]:
     by Bongsoon Kang et al., extended below 1600 K as needed. It is most accurate above 1600 K.
     If daylight is set to true, it provides a value in the daylight locus, rather than the color of a blackbody. The
     daylight locus is slightly above (greener than) the Planckian or blackbody locus. Note that the daylight option
-    breaks down when t < 4000."""
+    breaks down when t < 3000."""
     if daylight:
         if t < 7000:
             x = -4607000000/t**3 + 2967800/t**2 + 99.11/t + 0.244063
@@ -114,7 +114,7 @@ def rgb_to_cct_duv(r: int, g: int, b: int) -> tuple[float, float]:
     x, y = rgb_to_cie(r, g, b)
     return cie_to_cct_duv(x, y)
 
-def print_color_patch(r, g, b, width=15, height=4):
+def print_color_patch(r, g, b, width=15, height=4) -> None:
     """Prints a color patch with the given RGB value."""
     for _ in range(height):
         print(f"\033[48;2;{r};{g};{b}m" + " " * width + "\033[0m")
