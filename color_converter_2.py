@@ -501,7 +501,7 @@ if __name__ == "__main__":
     s = f"\033[38;2;{R};{G};{B}m"
     s += f"sRGB({R}, {G}, {B}){("*" if out_of_sRGB else "")}, hex code #{hex}"
     s += f"\nHSV (sRGB): H={H:.2f}° S={S_HSV:.3f} V={V:.3f}"
-    s += f"\nHSL (sRGB): H={H:.2f}° S={S_HSL:.3f} V={L:.3f}"
+    s += f"\nHSL (sRGB): H={H:.2f}° S={S_HSL:.3f} L={L:.3f}"
     s += f"\nAdobe RGB: ({RA}, {GA}, {BA})" + ("*" if out_of_adobe else "")
     s += f"; Display P3: ({RP3}, {GP3}, {BP3})" + ("*" if out_of_p3 else "")
     s += f"; Rec. 2020: ({R20}, {G20}, {B20})" + ("*" if out_of_rec2020 else "")
