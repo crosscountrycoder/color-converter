@@ -30,11 +30,12 @@ of xyY color space. Y in XYZ is the same as Y in xyY.
 
 `python3 color_converter_2.py temp <T>`: Sets the color to that of a black body at `T` kelvins. T can range from 800 K (the 
 Draper point, below which objects emit negligible visible light) to infinity, where the Planckian locus terminates at
-`x=0.2399 y=0.2340`, corresponding to sRGB(148, 177, 255) or hex code 94b1ff. Colors are calculateed based on Planck's law
+`x=0.2399 y=0.2340`, corresponding to sRGB(148, 177, 255) or hex code 94b1ff. Colors are calculated based on Planck's law
 and the CIE color-matching functions in `CIE_xyz_1931_2deg.csv`.
 
 `python3 color_converter_2.py daylight <T>`: Similar to `temp`, but produces a color from the daylight locus rather than the
-Planckian (blackbody) locus. Here, T must be between 4000 and 25000.
+Planckian (blackbody) locus. Here, T must be between 4000 and 25000. The color `daylight 6500` is exactly the same as the D65
+white point which corresponds to RGB(255, 255, 255) in sRGB.
 
 `python3 color_converter_2.py Lab <L> <a> <b>`: Sets the color to the given coordinate in CIE Lab color space.
 
@@ -43,13 +44,28 @@ Planckian (blackbody) locus. Here, T must be between 4000 and 25000.
 `python3 color_converter_2.py spectral <wavelength> [n]`: Sets the color to the spectral color of the given wavelength in
 nanometers. If the letter `n` is added after the argument, the brightness is set to its maximum brightness.
 
-# color_converter.py
+## Notes about color_converter_2.py
+
+* The default RGB color space used is sRGB. If a color is outside the sRGB color gamut, it is moved towards the D65 white point
+until it is within the gamut. If a color is above the maximum brightness supported in sRGB for the given chromaticity, its
+brightness (Y in XYZ/xyY) is reduced.
+
+## color_converter.py
 
 This is an old and deprecated file, `color_converter_2.py` should be used as it has all the capabilities of this file and more,
 while being more precise.
 
-# hsv_circle.py
+## hsv_circle.py
 
 This file produces `hsv_circle.png`, the circular face at the top of the HSV color cone/cylinder. Hue is the angle clockwise from
 top, saturation is distance from center, and value is a constant 1, so the image contains all full-brightness sRGB colors. Any
 other sRGB color can be produced by mixing one of these colors with black.
+
+## CSV files
+
+`CIE_xyx_1931_2deg.csv` shows the XYZ coordinates of each spectral color, with Y specifying brightness relative to 555 nm (the
+wavelength at which the eyes are most sensitive), and comes from the 
+[CIE color matching functions](https://cie.co.at/datatable/cie-1931-colour-matching-functions-2-degree-observer).
+
+`CIE_xy_locus.csv` shows the xy coordinates of each wavelength, derived from their XYZ coordinates. It is used to determine
+whether a color can be produced by a real light spectrum, or is an impossible color.

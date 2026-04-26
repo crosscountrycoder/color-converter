@@ -1,10 +1,12 @@
 import sys
 import csv
 import numpy as np
+import math
 from dataclasses import dataclass
 
 Point = tuple[float, float]
 Triplet = tuple[float, float, float]
+Polygon = list[tuple[float, float]]
 
 C2 = 1.438776877e-2  # second radiation constant in Planck's law (m*K)
 
@@ -39,6 +41,51 @@ def load_cie_1931_csv(path: str):
 
 WAVELENGTHS_NM, XBAR, YBAR, ZBAR = load_cie_1931_csv("CIE_xyz_1931_2deg.csv")
 WAVELENGTHS_M = WAVELENGTHS_NM * 1e-9
+
+def load_xy_polygon(filename: str) -> Polygon:
+    polygon = []
+    with open(filename, "r", newline="") as file:
+        reader = csv.reader(file)
+        next(reader)  # skip header
+        for row in reader:
+            x = float(row[1])
+            y = float(row[2])
+            polygon.append((x, y))
+    return polygon
+
+def distance_point_to_segment(px: float, py: float, ax: float, ay: float, bx: float, by: float) -> float:
+    dx = bx - ax
+    dy = by - ay
+    if dx == 0 and dy == 0:
+        return math.hypot(px - ax, py - ay)
+    t = ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)
+    t = max(0, min(1, t))
+    closest_x = ax + t * dx
+    closest_y = ay + t * dy
+    return math.hypot(px - closest_x, py - closest_y)
+
+def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=1e-9) -> bool:
+    n = len(polygon)
+    # Check if point is on or near boundary
+    for i in range(n):
+        ax, ay = polygon[i]
+        bx, by = polygon[(i + 1) % n]
+        if distance_point_to_segment(x, y, ax, ay, bx, by) <= epsilon:
+            return True
+    # Standard ray-casting point-in-polygon test
+    inside = False
+    for i in range(n):
+        ax, ay = polygon[i]
+        bx, by = polygon[(i + 1) % n]
+        if (ay > y) != (by > y):
+            x_intersect = ax + (y - ay) * (bx - ax) / (by - ay)
+            if x < x_intersect:
+                inside = not inside
+    return inside
+
+def color_is_valid(x: float, y: float) -> bool:
+    polygon = load_xy_polygon("CIE_xy_locus.csv")
+    return point_in_polygon_or_near(x, y, polygon)
 
 def clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
     return max(lo, min(x, hi))
@@ -433,6 +480,9 @@ if __name__ == "__main__":
     cct, duv = XYZ_to_CCT_Duv(X, Y, Z)
     L_lab, a, b = XYZ_to_Lab(X, Y, Z)
     L_luv, u, v = XYZ_to_Luv(X, Y, Z)
+    if not color_is_valid(x, y):
+        print("Invalid color (cannot be produced by a real color spectrum)")
+        exit(1)
     print_color_patch(R, G, B)
     s = f"\033[38;2;{R};{G};{B}m"
     s += f"RGB({R}, {G}, {B}), hex code #{hex}"
@@ -447,6 +497,8 @@ if __name__ == "__main__":
         s += f"\nDUV: {duv:.4f}"
     if out_of_gamut:
         s += f"\nNote: Color not in sRGB gamut. Displayed color (RGB/HSV/HSL) has been moved towards the D65 white point."
+        rx, ry, _ = XYZ_to_xyY(*RGB_to_XYZ(R/255, G/255, B/255, COLOR_SPACE))
+        s += f"\nThe CIE 1931 chromaticity of the displayed color is x={rx:.4f} y={ry:.4f}"
     if max_bright:
         REAL_Y = RGB_to_XYZ(R/255, G/255, B/255, COLOR_SPACE)[1]
         s += f"\nNote: Specified color is above maximum sRGB brightness. The Y value of the displayed color is {REAL_Y:.4f}"
