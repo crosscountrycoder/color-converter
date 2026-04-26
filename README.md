@@ -6,6 +6,8 @@ temperature (blackbody or daylight) to sRGB. Coming soon are CIE XYZ, xyY, and L
 
 ## Syntax for color_converter_2.py
 
+This file requires the third-party `numpy` library, which can be installed using `pip install numpy`.
+
 `python3 color_converter_2.py rgb <R> <G> <B>`: Sets the color to the given sRGB value. It accepts either integer arguments in 
 the range [0, 255], such as `255 128 0`, or decimals in the range [0, 1], such as `1.0 0.5 0.0`. The RGB value is understood to
 be in sRGB.
@@ -56,6 +58,8 @@ This is an old and deprecated file, `color_converter_2.py` should be used as it 
 while being more precise.
 
 ## hsv_circle.py
+
+This file requires the third-party `numpy` library, which can be installed using `pip install pillow`.
 
 This file produces `hsv_circle.png`, the circular face at the top of the HSV color cone/cylinder. Hue is the angle clockwise from
 top, saturation is distance from center, and value is a constant 1, so the image contains all full-brightness sRGB colors. Any
