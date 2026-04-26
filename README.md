@@ -60,6 +60,8 @@ specified as sRGB)
 resembles the given color. Duv measures the distance from the blackbody color - zero Duv means the color is exactly the same as a
 blackbody, positive Duv means it is more green than the nearest blackbody, and negative Duv means it is more purple.
     * CCT and Duv are only specified when Duv is between -0.05 and +0.05. Outside this range, they become less meaningful.
+    * CCT can range from 800 K (Draper point) to 4953224 K. Above 1000000 K, differences are so small as to be negligible - the
+    color converges to x=0.2399 y=0.2340 corresponding to sRGB(148, 177, 255) or hex code #94b1ff.
 * If the color is outside the sRGB gamut, the displayed color is moved towards the D65 white point. If its brightness (Y in CIE 
 xyY and XYZ) is above the maximum supported by sRGB for a particular chromaticity, Y is reduced while preserving xy chromaticity. 
 In either case, the actual values of x, y, and Y are shown.
