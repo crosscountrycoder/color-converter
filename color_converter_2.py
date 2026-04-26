@@ -348,7 +348,7 @@ def XYZ_to_Lab(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
     return L, a_star, b_star
 
 def XYZ_to_Luv(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
-    if L == 0:
+    if Y == 0:
         return 0.0, 0.0, 0.0
     Xn, Yn, Zn = xyY_to_XYZ(*white)
     u, v = XYZ_to_uv_prime(X, Y, Z)
