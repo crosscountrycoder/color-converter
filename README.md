@@ -1,26 +1,55 @@
 # color-converter
 
-The Python script color-converter.py allows conversion between sRGB color values (specified as RGB values like 149, 177, 255 or
+The Python script color_converter_2.py allows conversion between sRGB color values (specified as RGB values like 149, 177, 255 or
 hex values like 95b1ff), CIE 1931 xy coordinates, and correlated color temperature/DUV. It also allows users to convert color
 temperature (blackbody or daylight) to sRGB. Coming soon are CIE XYZ, xyY, and LAB color spaces, and HSV/HSL.
 
-## Syntax for color-converter.py
+## Syntax for color_converter_2.py
 
-`python3 color_converter.py rgb <R> <G> <B>`: Sets the color to the given sRGB value. R, G, B must be positive integers between 0 and
-255, inclusive. For any given color, it shows the CIE 1931 xy chromaticity coordinates. If it is sufficiently close to the Planckian 
-locus, it shows the correlated color temperature and DUV. A positive DUV means the light is greener than the nearest blackbody, and a 
-negative DUV means the light is more purple than the blackbody.
+`python3 color_converter_2.py rgb <R> <G> <B>`: Sets the color to the given sRGB value. It accepts either integer arguments in 
+the range [0, 255], such as `255 128 0`, or decimals in the range [0, 1], such as `1.0 0.5 0.0`. The RGB value is understood to
+be in sRGB.
 
-`python3 color_converter.py hex <hexcode>`: Sets the color to the given hex value (representing an RGB value). Again, it shows the
-RGB value, xy color, and color temperature/DUV if applicable.
+`python3 color_converter_2.py hex <hex>`: Similar to `rgb`, but using a hex code (such as `ff8000`) rather than individual RGB 
+values.
 
-`python3 color_converter.py cie <x> <y>`: Sets the color to the given CIE xy coordinate, with maximum brightness (that is, at least
-one of the RGB values is 255). Shows the RGB values and hex code, as well as color temperature/DUV if applicable.
+`python3 color_converter_2.py hsl <H> <S> <L>`: Sets the color to the given HSL (hue, saturation, lightness) value, a
+transformation of RGB. Hue is given in degrees (red = 0, green = 120, blue = 240), and saturation and lightness are in the range
+[0, 1]. Lightness of 0 is always black and lightness 1 is always white.
 
-`python3 color_converter.py temp <T>`: Sets the color to that of a blackbody with the given temperature in kelvins, and shows the RGB,
-hex, and CIE xy values. If the word "daylight" is added after the temperature argument, the color given will be on the daylight locus,
-not the Planckian (blackbody) locus. For example, `python3 color_converter.py temp 6500 daylight` sets the color to 6500 K on the
-daylight locus. The daylight option breaks down at temperatures below 3000 K.
+`python3 color_converter_2.py hsv <H> <S> <V>`: Sets the color to the given HSV (hue, saturation, value) value, a transformation 
+of RGB. Hue is given in degrees (red = 0, green = 120, blue = 240), and saturation and value are in the range
+[0, 1]. A value of 0 is always black, while a value of 1 means at least one of the RGB values is equal to 1.0 or 255.
 
-If T is set to `inf` (infinity), it will show `#95b1ff`, which is the color of a black body as its temperature approaches infinity.
-This value is similar to the value `#94b1ff` calculated by David Madore: (https://johncarlosbaez.wordpress.com/2022/01/16/the-color-of-infinite-temperature/)
+`python3 color_converter_2.py xyy <x> <y> [Y]`: Sets the color to the given coordinate in 
+[CIE xyY color space](https://en.wikipedia.org/wiki/CIE_1931_color_space). Here, the x and y coordinates represent the
+chromaticity (hue + saturation), and Y represents linear brightness relative to RGB white.
+
+`python3 color_converter_2.py xyz [X] [Y] [Z]`: Sets the color to the given coordinate in CIE XYZ color space, a transformation
+of xyY color space. Y in XYZ is the same as Y in xyY.
+
+`python3 color_converter_2.py temp <T>`: Sets the color to that of a black body at `T` kelvins. T can range from 800 K (the 
+Draper point, below which objects emit negligible visible light) to infinity, where the Planckian locus terminates at
+`x=0.2399 y=0.2340`, corresponding to sRGB(148, 177, 255) or hex code 94b1ff. Colors are calculateed based on Planck's law
+and the CIE color-matching functions in `CIE_xyz_1931_2deg.csv`.
+
+`python3 color_converter_2.py daylight <T>`: Similar to `temp`, but produces a color from the daylight locus rather than the
+Planckian (blackbody) locus. Here, T must be between 4000 and 25000.
+
+`python3 color_converter_2.py Lab <L> <a> <b>`: Sets the color to the given coordinate in CIE Lab color space.
+
+`python3 color_converter_2.py Lab <L> <a> <b>`: Sets the color to the given coordinate in CIE Luv color space.
+
+`python3 color_converter_2.py spectral <wavelength> [n]`: Sets the color to the spectral color of the given wavelength in
+nanometers. If the letter `n` is added after the argument, the brightness is set to its maximum brightness.
+
+# color_converter.py
+
+This is an old and deprecated file, `color_converter_2.py` should be used as it has all the capabilities of this file and more,
+while being more precise.
+
+# hsv_circle.py
+
+This file produces `hsv_circle.png`, the circular face at the top of the HSV color cone/cylinder. Hue is the angle clockwise from
+top, saturation is distance from center, and value is a constant 1, so the image contains all full-brightness sRGB colors. Any
+other sRGB color can be produced by mixing one of these colors with black.
