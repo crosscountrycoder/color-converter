@@ -260,9 +260,9 @@ def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet:
     fx = fy + a / 500.0
     fz = fy - b / 200.0
     DELTA = 6.0 / 29.0
-    X = Xn * (fx ** 3 if fx < DELTA else 3 * (DELTA ** 2) * ((fx - 4.0) / 29.0))
-    Y = Yn * (fy ** 3 if fy < DELTA else 3 * (DELTA ** 2) * ((fy - 4.0) / 29.0))
-    Z = Xn * (fz ** 3 if fz < DELTA else 3 * (DELTA ** 2) * ((fz - 4.0) / 29.0))
+    X = Xn * (fx ** 3 if fx > DELTA else 3 * (DELTA ** 2) * ((fx - 4.0) / 29.0))
+    Y = Yn * (fy ** 3 if fy > DELTA else 3 * (DELTA ** 2) * ((fy - 4.0) / 29.0))
+    Z = Zn * (fz ** 3 if fz > DELTA else 3 * (DELTA ** 2) * ((fz - 4.0) / 29.0))
     return X, Y, Z
 
 def XYZ_to_uv_prime(X: float, Y: float, Z: float) -> Point:
@@ -348,14 +348,14 @@ def XYZ_to_Lab(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
     return L, a_star, b_star
 
 def XYZ_to_Luv(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
+    if L == 0:
+        return 0.0, 0.0, 0.0
     Xn, Yn, Zn = xyY_to_XYZ(*white)
     u, v = XYZ_to_uv_prime(X, Y, Z)
     un, vn = XYZ_to_uv_prime(Xn, Yn, Zn)
     yr = Y / Yn
     DELTA = 6/29
     L = (yr**(1/3) if yr>DELTA**3 else yr/(3*DELTA**2)+4/29) * 116 - 16
-    if L == 0:
-        return 0.0, 0.0, 0.0
     u_star = 13 * L * (u - un)
     v_star = 13 * L * (v - vn)
     return L, u_star, v_star
