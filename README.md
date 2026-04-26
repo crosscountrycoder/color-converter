@@ -69,7 +69,9 @@ value.
 Example input: `python3 color_converter_2.py temp 1500` (the color of a 1500 K blackbody)
 
 Example output:
-![#ff6c00](https://placehold.co/20x20/ff6c00/ff6c00.png)
+
+![#ff6c00](https://placehold.co/100x100/ff6c00/ff6c00.png)
+
 ```
 sRGB(255, 108, 0)*, hex code #ff6c00
 HSV (sRGB): H=25.41° S=1.000 V=1.000
