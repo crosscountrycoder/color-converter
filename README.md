@@ -33,12 +33,13 @@ chromaticity (hue + saturation), and Y represents linear brightness relative to 
 `python3 color_converter_2.py xyz [X] [Y] [Z]`: Sets the color to the given coordinate in CIE XYZ color space, a transformation
 of xyY color space. Y in XYZ is the same as Y in xyY.
 
-`python3 color_converter_2.py temp <T>`: Sets the color to that of a black body at `T` kelvins. T can range from 800 K (the 
+`python3 color_converter_2.py temp <T> [Y]`: Sets the color to that of a black body at `T` kelvins. T can range from 800 K (the 
 Draper point, below which objects emit negligible visible light) to infinity, where the Planckian locus terminates at
 `x=0.2399 y=0.2340`, corresponding to sRGB(148, 177, 255) or hex code 94b1ff. Colors are calculated based on Planck's law
-and the CIE color-matching functions in `CIE_xyz_1931_2deg.csv`.
+and the CIE color-matching functions in `CIE_xyz_1931_2deg.csv`. If the value `Y` is specified the returned color is of the given 
+Y-value or brightness, otherwise it defaults to 1 (max brightness).
 
-`python3 color_converter_2.py daylight <T>`: Similar to `temp`, but produces a color from the daylight locus rather than the
+`python3 color_converter_2.py daylight <T> [Y]`: Similar to `temp`, but produces a color from the daylight locus rather than the
 Planckian (blackbody) locus. Here, T must be between 4000 and 25000. The color `daylight 6500` is exactly the same as the D65
 white point which corresponds to RGB(255, 255, 255) in sRGB.
 

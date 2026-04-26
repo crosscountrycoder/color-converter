@@ -230,19 +230,18 @@ def RGB_to_XYZ(R: float, G: float, B: float, space: RGBSpace = SRGB) -> Triplet:
     XYZ = M @ np.array([r, g, b], dtype=float)
     return tuple(float(v) for v in XYZ)
 
-def temp_to_XYZ(T: float) -> Triplet:
+def temp_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
     if T < 800:
         raise ValueError("Temperature must be at or above the Draper point (800 K)")
     t = min(T, 1e15) # reduce "infinite" temperature to 1e15 to make calculation possible
     exponent = C2 / (WAVELENGTHS_M * t)
     spd = 1.0 / ((WAVELENGTHS_M ** 5) * np.expm1(exponent))
-    X = np.sum(spd * XBAR)
-    Y = np.sum(spd * YBAR)
-    Z = np.sum(spd * ZBAR)
-    # Normalize so Y = 1
-    return float(X / Y), 1.0, float(Z / Y)
+    X0 = np.sum(spd * XBAR)
+    Y0 = np.sum(spd * YBAR)
+    Z0 = np.sum(spd * ZBAR)
+    return float(X0 / Y0 * Y), Y, float(Z0 / Y0 * Y)
 
-def daylight_to_XYZ(T: float) -> Triplet:
+def daylight_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
     if 4000 <= T <= 25000:
         if T <= 7000:
             x = 0.244063 + 99.11/T + 2967800/T**2 - 4.607e9/T**3
@@ -251,7 +250,7 @@ def daylight_to_XYZ(T: float) -> Triplet:
     else:
         raise ValueError("Temperature for daylight must be between 4000 and 25000 K")
     y = -3*x**2 + 2.87*x - 0.275
-    X, Y, Z = xyY_to_XYZ(x, y, 1)
+    X, _, Z = xyY_to_XYZ(x, y, Y)
     return X, Y, Z
 
 def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet: 
@@ -428,8 +427,8 @@ if __name__ == "__main__":
         print("python3 color_converter_2.py hsv <H> <S> <V> [srgb|adobe|p3|rec2020]")
         print("python3 color_converter_2.py xyy <x> <y> [Y] (Y defaults to 1 if not specified)")
         print("python3 color_converter_2.py xyz <x> <y> <z>")
-        print("python3 color_converter_2.py temp <T>")
-        print("python3 color_converter_2.py daylight <T> - T must be between 4000 and 25000")
+        print("python3 color_converter_2.py temp <T> [Y] (Y defaults to 1 if not specified)")
+        print("python3 color_converter_2.py daylight <T> [Y] (T must be between 4000 and 25000, Y defaults to 1)")
         print("python3 color_converter_2.py Lab <L> <a> <b>")
         print("python3 color_converter_2.py Luv <L> <u> <v>")
         print("python3 color_converter_2.py spectral <wavelength> [n] - wavelength is in nm, n normalizes to max brightness")
@@ -470,9 +469,9 @@ if __name__ == "__main__":
     elif arg1 == "xyz":
         X, Y, Z = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
     elif arg1 == "temp":
-        X, Y, Z = temp_to_XYZ(float(sys.argv[2]))
+        X, Y, Z = temp_to_XYZ(float(sys.argv[2]), float(sys.argv[3]) if len(sys.argv) >= 4 else 1.0)
     elif arg1 == "daylight":
-        X, Y, Z = daylight_to_XYZ(float(sys.argv[2]))
+        X, Y, Z = daylight_to_XYZ(float(sys.argv[2]), float(sys.argv[3]) if len(sys.argv) >= 4 else 1.0)
     elif arg1 == "lab":
         X, Y, Z = Lab_to_XYZ(float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]))
     elif arg1 == "luv":
