@@ -403,7 +403,7 @@ def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> tuple[float, float]:
     CCT = clamp(1 / m_best, 800, 5000000)
     ub, vb = XYZ_to_uv_prime(*temp_to_XYZ(CCT))
     vb *= 2/3
-    Duv = (1 if v >= vb else -1) * ((u - ub) ** 2 + (v - vb) ** 2) ** 0.5
+    Duv = (1 if v >= vb else -1) * math.sqrt((u - ub) ** 2 + (v - vb) ** 2)
     return CCT, Duv
 
 def print_color_patch(r, g, b, width=15, height=4) -> None:
