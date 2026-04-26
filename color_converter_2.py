@@ -243,10 +243,11 @@ def temp_to_XYZ(T: float) -> Triplet:
     return float(X / Y), 1.0, float(Z / Y)
 
 def daylight_to_XYZ(T: float) -> Triplet:
-    if 4000 <= T <= 7000:
-        x = 0.244063 + 99.11/T + 2967800/T**2 - 4.607e9/T**3
-    elif T <= 25000:
-        x = 0.23704 + 247.48/T + 1901800/T**2 - 2.0064e9/T**3
+    if 4000 <= T <= 25000:
+        if T <= 7000:
+            x = 0.244063 + 99.11/T + 2967800/T**2 - 4.607e9/T**3
+        else:
+            x = 0.23704 + 247.48/T + 1901800/T**2 - 2.0064e9/T**3
     else:
         raise ValueError("Temperature for daylight must be between 4000 and 25000 K")
     y = -3*x**2 + 2.87*x - 0.275
