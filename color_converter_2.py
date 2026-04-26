@@ -19,10 +19,10 @@ class RGBSpace:
     transfer_curve: str
 
 D65 = (0.3127, 0.3290) # D65 white point
-SRGB       = RGBSpace((0.640, 0.330), (0.300, 0.600), (0.150, 0.060), D65, "srgb")
-DISPLAY_P3 = RGBSpace((0.680, 0.320), (0.265, 0.690), (0.150, 0.060), D65, "srgb")
-ADOBE_RGB  = RGBSpace((0.640, 0.330), (0.210, 0.710), (0.150, 0.060), D65, "2.2")
-REC_2020   = RGBSpace((0.708, 0.292), (0.170, 0.797), (0.131, 0.046), D65, "rec2020")
+SRGB       = RGBSpace((0.6400, 0.3300), (0.3000, 0.6000), (0.1500, 0.0600), D65, "srgb")
+DISPLAY_P3 = RGBSpace((0.6800, 0.3200), (0.2650, 0.6900), (0.1500, 0.0600), D65, "srgb")
+ADOBE_RGB  = RGBSpace((0.6400, 0.3300), (0.2100, 0.7100), (0.1500, 0.0600), D65, "2.2")
+REC_2020   = RGBSpace((0.7079, 0.2920), (0.1702, 0.7965), (0.1314, 0.0459), D65, "rec2020")
 
 def load_cie_1931_csv(path: str):
     wavelengths_nm = []
@@ -64,7 +64,7 @@ def distance_point_to_segment(px: float, py: float, ax: float, ay: float, bx: fl
     closest_y = ay + t * dy
     return math.hypot(px - closest_x, py - closest_y)
 
-def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=1e-9) -> bool:
+def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=5e-5) -> bool:
     n = len(polygon)
     # Check if point is on or near boundary
     for i in range(n):
@@ -83,9 +83,9 @@ def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=1e-9) -> bool:
                 inside = not inside
     return inside
 
-def color_is_valid(x: float, y: float) -> bool:
+def color_is_valid(x: float, y: float, epsilon=5e-5) -> bool:
     polygon = load_xy_polygon("CIE_xy_locus.csv")
-    return point_in_polygon_or_near(x, y, polygon)
+    return point_in_polygon_or_near(x, y, polygon, epsilon)
 
 def clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
     return max(lo, min(x, hi))
@@ -176,7 +176,7 @@ def RGB_to_HSL(R: float, G: float, B: float) -> Triplet:
 
     return H, S, L
 
-def RGB_to_XYZ_matrix(space: RGBSpace) -> np.ndarray:
+def RGB_to_XYZ_matrix(space: RGBSpace = SRGB) -> np.ndarray:
     R = np.array(xyY_to_XYZ(*space.red), dtype=float)
     G = np.array(xyY_to_XYZ(*space.green), dtype=float)
     B = np.array(xyY_to_XYZ(*space.blue), dtype=float)
@@ -224,7 +224,7 @@ def xyY_to_XYZ(x: float, y: float, Y: float = 1.0) -> Triplet:
     Z = (1.0 - x - y) * Y / y
     return X, Y, Z
 
-def RGB_to_XYZ(R: float, G: float, B: float, space: RGBSpace) -> Triplet:
+def RGB_to_XYZ(R: float, G: float, B: float, space: RGBSpace = SRGB) -> Triplet:
     r, g, b = RGB_to_linear(R, G, B, space.transfer_curve)
     M = RGB_to_XYZ_matrix(space)
     XYZ = M @ np.array([r, g, b], dtype=float)
@@ -298,7 +298,7 @@ def spectral_to_XYZ(wavelength_nm: float, normalize: bool = False) -> Triplet:
         return float(X) / Y, 1, float(Z) / Y
     return float(X), float(Y), float(Z)
 
-def XYZ_to_RGB(X: float, Y: float, Z: float, space: RGBSpace) -> tuple[Triplet, bool, bool]:
+def XYZ_to_RGB(X: float, Y: float, Z: float, space: RGBSpace = SRGB) -> tuple[Triplet, bool, bool]:
     XYZ = np.array([X, Y, Z], dtype=float)
     M = RGB_to_XYZ_matrix(space)
     M_inv = np.linalg.inv(M)
@@ -412,13 +412,20 @@ def print_color_patch(r, g, b, width=15, height=4) -> None:
     for _ in range(height):
         print(f"\033[48;2;{r};{g};{b}m" + " " * width + "\033[0m")
 
+def get_colorspace(color_space: str) -> RGBSpace:
+    color_space = color_space.lower()
+    if color_space == "adobe": return ADOBE_RGB
+    elif color_space == "p3": return DISPLAY_P3
+    elif color_space == "rec2020": return REC_2020
+    else: return SRGB
+
 if __name__ == "__main__":
     if len(sys.argv) <= 1:
         print("Syntax:")
-        print("python3 color_converter_2.py rgb <R> <G> <B>")
-        print("python3 color_converter_2.py hex <hexcode> (example: ffe6d0, do not include #)")
-        print("python3 color_converter_2.py hsl <H> <S> <L>")
-        print("python3 color_converter_2.py hsv <H> <S> <V>")
+        print("python3 color_converter_2.py rgb <R> <G> <B> [srgb|adobe|p3|rec2020]")
+        print("python3 color_converter_2.py hex <hexcode> [srgb|adobe|p3|rec2020]")
+        print("python3 color_converter_2.py hsl <H> <S> <L> [srgb|adobe|p3|rec2020]")
+        print("python3 color_converter_2.py hsv <H> <S> <V> [srgb|adobe|p3|rec2020]")
         print("python3 color_converter_2.py xyy <x> <y> [Y] (Y defaults to 1 if not specified)")
         print("python3 color_converter_2.py xyz <x> <y> <z>")
         print("python3 color_converter_2.py temp <T>")
@@ -428,9 +435,9 @@ if __name__ == "__main__":
         print("python3 color_converter_2.py spectral <wavelength> [n] - wavelength is in nm, n normalizes to max brightness")
         exit(1)
     arg1 = sys.argv[1].lower()
-    COLOR_SPACE = SRGB # The RGB color space to use
     if arg1 == "rgb":
         rs, gs, bs = sys.argv[2], sys.argv[3], sys.argv[4]
+        color_space = SRGB if len(sys.argv) == 5 else get_colorspace(sys.argv[5])
         if "." in rs or "." in gs or "." in bs:
             red = float(rs)
             green = float(gs)
@@ -439,21 +446,24 @@ if __name__ == "__main__":
             red = float(rs) / 255
             green = float(gs) / 255
             blue = float(bs) / 255
-        X, Y, Z = RGB_to_XYZ(red, green, blue, COLOR_SPACE)
+        X, Y, Z = RGB_to_XYZ(red, green, blue, color_space)
     elif arg1 == "hex":
+        color_space = SRGB if len(sys.argv) == 3 else get_colorspace(sys.argv[3])
         color = int(sys.argv[2], 16)
         red = ((color >> 16) & 0xFF) / 255
         green = ((color >> 8) & 0xFF) / 255
         blue = (color & 0xFF) / 255
-        X, Y, Z = RGB_to_XYZ(red, green, blue, COLOR_SPACE)
+        X, Y, Z = RGB_to_XYZ(red, green, blue, color_space)
     elif arg1 == "hsl":
+        color_space = SRGB if len(sys.argv) == 5 else get_colorspace(sys.argv[5])
         hue, sat, lum = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
         red, green, blue = HSL_to_RGB(hue, sat, lum)
-        X, Y, Z = RGB_to_XYZ(red, green, blue, COLOR_SPACE)
+        X, Y, Z = RGB_to_XYZ(red, green, blue, SRGB)
     elif arg1 == "hsv":
+        color_space = SRGB if len(sys.argv) == 5 else get_colorspace(sys.argv[5])
         hue, sat, val = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
         red, green, blue = HSV_to_RGB(hue, sat, val)
-        X, Y, Z = RGB_to_XYZ(red, green, blue, COLOR_SPACE)
+        X, Y, Z = RGB_to_XYZ(red, green, blue, SRGB)
     elif arg1 == "xyy":
         x0, y0, Y0 = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]) if len(sys.argv) >= 5 else 1.0
         X, Y, Z = xyY_to_XYZ(x0, y0, Y0)
@@ -470,10 +480,14 @@ if __name__ == "__main__":
     elif arg1 == "spectral":
         X, Y, Z = spectral_to_XYZ(float(sys.argv[2]), (len(sys.argv) >= 4 and sys.argv[3].lower() == "n"))
     x, y, _ = XYZ_to_xyY(X, Y, Z)
-    RGB, out_of_gamut, max_bright = XYZ_to_RGB(X, Y, Z, COLOR_SPACE)
-    R = round(RGB[0] * 255)
-    G = round(RGB[1] * 255)
-    B = round(RGB[2] * 255)
+    RGB, out_of_sRGB, max_bright = XYZ_to_RGB(X, Y, Z, SRGB)
+    RGB_ADOBE, out_of_adobe, _ = XYZ_to_RGB(X, Y, Z, ADOBE_RGB)
+    RGB_P3, out_of_p3, _ = XYZ_to_RGB(X, Y, Z, DISPLAY_P3)
+    RGB_REC2020, out_of_rec2020, _ = XYZ_to_RGB(X, Y, Z, REC_2020)
+    R, G, B = tuple(round(c * 255) for c in RGB)
+    RA, GA, BA = tuple(round(c * 255) for c in RGB_ADOBE)
+    RP3, GP3, BP3 = tuple(round(c * 255) for c in RGB_P3)
+    R20, G20, B20 = tuple(round(c * 255) for c in RGB_REC2020)
     H, S_HSV, V = RGB_to_HSV(R/255, G/255, B/255)
     _, S_HSL, L = RGB_to_HSL(R/255, G/255, B/255)
     hex_value = (R << 16) + (G << 8) + B
@@ -486,22 +500,24 @@ if __name__ == "__main__":
         exit(1)
     print_color_patch(R, G, B)
     s = f"\033[38;2;{R};{G};{B}m"
-    s += f"RGB({R}, {G}, {B}), hex code #{hex}"
-    s += f"\nHSV: H={H:.2f}° S={S_HSV:.3f} V={V:.3f}"
-    s += f"\nHSL: H={H:.2f}° S={S_HSL:.3f} V={L:.3f}"
+    s += f"sRGB({R}, {G}, {B}){("*" if out_of_sRGB else "")}, hex code #{hex}"
+    s += f"\nHSV (sRGB): H={H:.2f}° S={S_HSV:.3f} V={V:.3f}"
+    s += f"\nHSL (sRGB): H={H:.2f}° S={S_HSL:.3f} V={L:.3f}"
+    s += f"\nAdobe RGB: ({RA}, {GA}, {BA})" + ("*" if out_of_adobe else "")
+    s += f"; Display P3: ({RP3}, {GP3}, {BP3})" + ("*" if out_of_p3 else "")
+    s += f"; Rec. 2020: ({R20}, {G20}, {B20})" + ("*" if out_of_rec2020 else "")
     s += f"\nCIE 1931 xyY coordinates: x={x:.4f} y={y:.4f} Y={Y:.4f}"
     s += f"\nCIE 1931 XYZ coordinates: X={X:.4f} Y={Y:.4f} Z={Z:.4f}"
     s += f"\nCIE Lab coordinates: L={L_lab:.4f} a={a:.4f} b={b:.4f}"
     s += f"\nCIE Luv coordinates: L={L_luv:.4f} u={u:.4f} v={v:.4f}"
     if abs(duv) <= 0.05:
-        s += f"\nCorrelated color temperature: {cct:.0f} K"
-        s += f"\nDUV: {duv:.4f}"
-    if out_of_gamut:
-        s += f"\nNote: Color not in sRGB gamut. Displayed color (RGB/HSV/HSL) has been moved towards the D65 white point."
-        rx, ry, _ = XYZ_to_xyY(*RGB_to_XYZ(R/255, G/255, B/255, COLOR_SPACE))
+        s += f"\nCorrelated color temperature: {cct:.0f} K (Duv: {duv:.4f})"
+    if out_of_sRGB:
+        s += f"\nNote: Color not in sRGB gamut. Displayed color (sRGB/HSV/HSL) has been moved towards the D65 white point."
+        rx, ry, _ = XYZ_to_xyY(*RGB_to_XYZ(R/255, G/255, B/255, SRGB))
         s += f"\nThe CIE 1931 chromaticity of the displayed color is x={rx:.4f} y={ry:.4f}"
     if max_bright:
-        REAL_Y = RGB_to_XYZ(R/255, G/255, B/255, COLOR_SPACE)[1]
+        REAL_Y = RGB_to_XYZ(R/255, G/255, B/255, SRGB)[1]
         s += f"\nNote: Specified color is above maximum sRGB brightness. The Y value of the displayed color is {REAL_Y:.4f}"
     s += "\033[0m"
     print(s)
