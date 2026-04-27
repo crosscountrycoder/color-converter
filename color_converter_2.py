@@ -359,7 +359,7 @@ def XYZ_to_Luv(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
     v_star = 13 * L * (v - vn)
     return L, u_star, v_star
 
-def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> tuple[float, float]:
+def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> Point:
     u, v = XYZ_to_uv_prime(X, Y, Z)
     v *= 2/3
     Tmin = 800.0 # Draper point, where blackbody radiation starts to become visible
