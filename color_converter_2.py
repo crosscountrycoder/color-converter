@@ -363,11 +363,11 @@ def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> Point:
     u, v = XYZ_to_uv_prime(X, Y, Z)
     v *= 2/3
     Tmin = 800.0 # Draper point, where blackbody radiation starts to become visible
-    Tmax = 10000000.0 # At 5000000 K, blackbody radiation reaches limit of x=0.2399, y=0.2340
+    Tmax = 5000000.0 # At 5000000 K, blackbody radiation reaches limit of x=0.2399, y=0.2340
     samples = 200
 
     # Search over reciprocal temperature, which behaves better numerically
-    m_min = 1 / Tmax
+    m_min = 1 / (2 * Tmax) # expand search range to 2*Tmax and then clamp
     m_max = 1 / Tmin
     best_m = m_min
     best_d2 = float("inf")
@@ -400,7 +400,7 @@ def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> Point:
         else:
             lo = m1
     m_best = (lo + hi) / 2
-    CCT = clamp(1 / m_best, 800, 5000000)
+    CCT = clamp(1 / m_best, Tmin, Tmax)
     ub, vb = XYZ_to_uv_prime(*temp_to_XYZ(CCT))
     vb *= 2/3
     Duv = (1 if v >= vb else -1) * math.sqrt((u - ub) ** 2 + (v - vb) ** 2)
