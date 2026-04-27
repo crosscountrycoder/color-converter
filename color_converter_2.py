@@ -426,7 +426,7 @@ if __name__ == "__main__":
         print("python3 color_converter_2.py hsl <H> <S> <L> [srgb|adobe|p3|rec2020]")
         print("python3 color_converter_2.py hsv <H> <S> <V> [srgb|adobe|p3|rec2020]")
         print("python3 color_converter_2.py xyy <x> <y> [Y] (Y defaults to 1 if not specified)")
-        print("python3 color_converter_2.py xyz <x> <y> <z>")
+        print("python3 color_converter_2.py xyz <X> <Y> <Z>")
         print("python3 color_converter_2.py temp <T> [Y] (Y defaults to 1 if not specified)")
         print("python3 color_converter_2.py daylight <T> [Y] (T must be between 4000 and 25000, Y defaults to 1)")
         print("python3 color_converter_2.py Lab <L> <a> <b>")
