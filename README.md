@@ -113,12 +113,13 @@ respective color space. Since the default color space for PNG images is sRGB, th
 
 ## CSV files
 
-`CIE_xyx_1931_2deg.csv` shows the XYZ coordinates of each spectral color, with Y specifying brightness relative to 555 nm (the
+`CIE_xyz_1931_2deg.csv` shows the XYZ coordinates of each spectral color, with Y specifying brightness relative to 555 nm (the
 wavelength at which the eyes are most sensitive), and comes from the 
 [CIE color matching functions](https://cie.co.at/datatable/cie-1931-colour-matching-functions-2-degree-observer).
 
 `CIE_xy_locus.csv` shows the xy coordinates of each wavelength, derived from their XYZ coordinates. It is used to determine
-whether a color can be produced by a real light spectrum, or is an impossible color.
+whether a color can be produced by a real light spectrum, or is an impossible color. It is derived from `CIE_xyz_1931_2deg.csv`
+using `generate_xy.py` which converts xyz into xyY for each wavelength.
 
 ## ICC profiles
 ICC profiles for Adobe, Display P3, Rec. 2020 and sRGB downloaded from (https://github.com/saucecontrol/Compact-ICC-Profiles).

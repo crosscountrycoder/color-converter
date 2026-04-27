@@ -19,10 +19,10 @@ class RGBSpace:
     transfer_curve: str
 
 D65 = (0.3127, 0.3290) # D65 white point
-SRGB       = RGBSpace((0.6400, 0.3300), (0.3000, 0.6000), (0.1500, 0.0600), D65, "srgb")
-DISPLAY_P3 = RGBSpace((0.6800, 0.3200), (0.2650, 0.6900), (0.1500, 0.0600), D65, "srgb")
-ADOBE_RGB  = RGBSpace((0.6400, 0.3300), (0.2100, 0.7100), (0.1500, 0.0600), D65, "2.2")
-REC_2020   = RGBSpace((0.7079, 0.2920), (0.1702, 0.7965), (0.1314, 0.0459), D65, "rec2020")
+SRGB       = RGBSpace((0.640, 0.330), (0.300, 0.600), (0.150, 0.060), D65, "srgb")
+DISPLAY_P3 = RGBSpace((0.680, 0.320), (0.265, 0.690), (0.150, 0.060), D65, "srgb")
+ADOBE_RGB  = RGBSpace((0.640, 0.330), (0.210, 0.710), (0.150, 0.060), D65, "2.2")
+REC_2020   = RGBSpace((0.707918,0.292027), (0.170237,0.796519), (0.131371,0.045876), D65, "rec2020")
 
 def load_cie_1931_csv(path: str):
     wavelengths_nm = []
@@ -64,7 +64,7 @@ def distance_point_to_segment(px: float, py: float, ax: float, ay: float, bx: fl
     closest_y = ay + t * dy
     return math.hypot(px - closest_x, py - closest_y)
 
-def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=5e-5) -> bool:
+def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=1e-4) -> bool:
     n = len(polygon)
     # Check if point is on or near boundary
     for i in range(n):
@@ -83,7 +83,7 @@ def point_in_polygon_or_near(x: float, y: float, polygon, epsilon=5e-5) -> bool:
                 inside = not inside
     return inside
 
-def color_is_valid(x: float, y: float, epsilon=5e-5) -> bool:
+def color_is_valid(x: float, y: float, epsilon=1e-4) -> bool:
     polygon = load_xy_polygon("CIE_xy_locus.csv")
     return point_in_polygon_or_near(x, y, polygon, epsilon)
 
