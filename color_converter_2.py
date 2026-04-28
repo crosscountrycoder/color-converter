@@ -239,7 +239,7 @@ def temp_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
     X0 = np.sum(spd * XBAR)
     Y0 = np.sum(spd * YBAR)
     Z0 = np.sum(spd * ZBAR)
-    return float(X0 / Y0 * Y), Y, float(Z0 / Y0 * Y)
+    return float(X0 / Y0) * Y, Y, float(Z0 / Y0) * Y
 
 def daylight_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
     if 4000 <= T <= 25000:
