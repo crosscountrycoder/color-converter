@@ -218,10 +218,10 @@ def linear_to_RGB(r: float, g: float, b: float, curve: str) -> Triplet:
     return clamp(R), clamp(G), clamp(B)
 
 def xyY_to_XYZ(x: float, y: float, Y: float = 1.0) -> Triplet:
-    if y == 0.0:
+    if y == 0:
         raise ValueError("y cannot be zero unless Y is also zero")
     X = x * Y / y
-    Z = (1.0 - x - y) * Y / y
+    Z = (1 - x - y) * Y / y
     return X, Y, Z
 
 def RGB_to_XYZ(R: float, G: float, B: float, space: RGBSpace = SRGB) -> Triplet:
@@ -235,7 +235,7 @@ def temp_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
         raise ValueError("Temperature must be at or above the Draper point (800 K)")
     t = min(T, 1e15) # reduce "infinite" temperature to 1e15 to make calculation possible
     exponent = C2 / (WAVELENGTHS_M * t)
-    spd = 1.0 / ((WAVELENGTHS_M ** 5) * np.expm1(exponent))
+    spd = 1 / ((WAVELENGTHS_M ** 5) * np.expm1(exponent))
     X0 = np.sum(spd * XBAR)
     Y0 = np.sum(spd * YBAR)
     Z0 = np.sum(spd * ZBAR)
@@ -255,13 +255,13 @@ def daylight_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
 
 def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet: 
     Xn, Yn, Zn = xyY_to_XYZ(*white)
-    fy = (L + 16.0) / 116.0
-    fx = fy + a / 500.0
-    fz = fy - b / 200.0
-    DELTA = 6.0 / 29.0
-    X = Xn * (fx ** 3 if fx > DELTA else 3 * (DELTA ** 2) * ((fx - 4.0) / 29.0))
-    Y = Yn * (fy ** 3 if fy > DELTA else 3 * (DELTA ** 2) * ((fy - 4.0) / 29.0))
-    Z = Zn * (fz ** 3 if fz > DELTA else 3 * (DELTA ** 2) * ((fz - 4.0) / 29.0))
+    fy = (L + 16) / 116
+    fx = fy + a / 500
+    fz = fy - b / 200
+    DELTA = 6 / 29
+    X = Xn * (fx ** 3 if fx > DELTA else 3 * (DELTA ** 2) * ((fx - 4) / 29))
+    Y = Yn * (fy ** 3 if fy > DELTA else 3 * (DELTA ** 2) * ((fy - 4) / 29))
+    Z = Zn * (fz ** 3 if fz > DELTA else 3 * (DELTA ** 2) * ((fz - 4) / 29))
     return X, Y, Z
 
 def XYZ_to_uv_prime(X: float, Y: float, Z: float) -> Point:
@@ -326,7 +326,7 @@ def XYZ_to_RGB(X: float, Y: float, Z: float, space: RGBSpace = SRGB) -> tuple[Tr
     return (R, G, B), out_of_gamut, max_bright
 
 def XYZ_to_xyY(X: float, Y: float, Z: float) -> Triplet:
-    if X + Y + Z == 0.0:
+    if X + Y + Z == 0:
         return 1/3, 1/3, Y # 1/3, 1/3 is the xy chromaticity of an equal SPD across the visible spectrum
     x = X / (X + Y + Z)
     y = Y / (X + Y + Z)
@@ -386,7 +386,7 @@ def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> Point:
     step = (m_max - m_min) / (samples - 1)
     lo = max(m_min, best_m - 2 * step)
     hi = min(m_max, best_m + 2 * step)
-    for _ in range(20):
+    for _ in range(30):
         m1 = lo + (hi - lo) / 3
         m2 = hi - (hi - lo) / 3
         u1, v1 = XYZ_to_uv_prime(*temp_to_XYZ(1/m1))
