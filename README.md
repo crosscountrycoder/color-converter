@@ -128,7 +128,7 @@ elif T >= 4328:
 ```
 This quartic formula works for any temperature above 800 K (the Draper point), and is continuous to 5 decimal places at its 
 breakpoints. The maximum error in CIE xy coordinates is 0.00017207 at T = 4328. This is much more accurate than the cubic spline approximation in color_converter.py (adopted from the Journal of the Korean Physical Society) which has a max error of 0.00053535
-at T = 2592.
+at T = 2592, and works with a much larger temperature range ([800, inf) rather than [1667, 25000]).
 
 ## CSV files
 
