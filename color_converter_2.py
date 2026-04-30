@@ -88,9 +88,11 @@ def color_is_valid(x: float, y: float, epsilon=1e-4) -> bool:
     return point_in_polygon_or_near(x, y, polygon, epsilon)
 
 def clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
+    """Clamps a number x to the range [lo, hi]."""
     return max(lo, min(x, hi))
 
 def HSL_to_RGB(H: float, S: float, L: float) -> Triplet:
+    """Converts HSL coordinates (where H is in the range 0-360, and S and L are in the range 0-1) to RGB in range 0-1."""
     H %= 360
     C = (1 - abs(2 * L - 1)) * S
     Hp = H / 60
@@ -116,6 +118,7 @@ def HSL_to_RGB(H: float, S: float, L: float) -> Triplet:
     return R, G, B
 
 def HSV_to_RGB(H: float, S: float, V: float) -> Triplet:
+    """Converts HSV coordinates (where H is in the range 0-360, and S and V are in the range 0-1) to RGB in range 0-1."""
     H %= 360
     C = V * S
     Hp = H / 60
@@ -141,6 +144,7 @@ def HSV_to_RGB(H: float, S: float, V: float) -> Triplet:
     return R, G, B
 
 def RGB_to_HSV(R: float, G: float, B: float) -> Triplet:
+    """Converts RGB values in range 0-1 to HSV. H ranges from 0-360, S and V range from 0-1."""
     V = max(R, G, B)
     delta = V - min(R, G, B)
     if delta == 0:
@@ -155,6 +159,7 @@ def RGB_to_HSV(R: float, G: float, B: float) -> Triplet:
     return H, S, V
 
 def RGB_to_HSL(R: float, G: float, B: float) -> Triplet:
+    """Converts RGB values in range 0-1 to HSL. H ranges from 0-360, S and L range from 0-1."""
     cmax = max(R, G, B)
     cmin = min(R, G, B)
     delta = cmax - cmin
@@ -177,6 +182,8 @@ def RGB_to_HSL(R: float, G: float, B: float) -> Triplet:
     return H, S, L
 
 def RGB_to_XYZ_matrix(space: RGBSpace = SRGB) -> np.ndarray:
+    """Given an RGB color space (SRGB, ADOBE_RGB, DISPLAY_P3 or REC_2020), returns the matrix used to convert linear RGB
+    values to CIE XYZ coordinates."""
     R = np.array(xyY_to_XYZ(*space.red), dtype=float)
     G = np.array(xyY_to_XYZ(*space.green), dtype=float)
     B = np.array(xyY_to_XYZ(*space.blue), dtype=float)
@@ -186,6 +193,8 @@ def RGB_to_XYZ_matrix(space: RGBSpace = SRGB) -> np.ndarray:
     return M @ np.diag(S)
 
 def RGB_to_linear(R: float, G: float, B: float, curve: str) -> Triplet:
+    """Converts gamma-corrected RGB values in range 0-1 to linear RGB given a transfer curve. Transfer curve may be either
+    srgb, rec2020, or any string that converts to a floating-point number (such as 2.2)."""
     if curve == "srgb":
         r = R / 12.92 if R <= 0.04045 else ((R + 0.055)/1.055)**2.4
         g = G / 12.92 if G <= 0.04045 else ((G + 0.055)/1.055)**2.4
@@ -202,6 +211,8 @@ def RGB_to_linear(R: float, G: float, B: float, curve: str) -> Triplet:
     return clamp(r), clamp(g), clamp(b)
 
 def linear_to_RGB(r: float, g: float, b: float, curve: str) -> Triplet:
+    """Converts linear RGB values in range 0-1 to gamma-corrected RGB given a transfer curve. Transfer curve may be either
+    srgb, rec2020, or any string that converts to a floating-point number (such as 2.2)."""
     if curve == "srgb":
         R = 12.92 * r if r <= 0.0031308 else 1.055 * (r ** (1 / 2.4)) - 0.055
         G = 12.92 * g if g <= 0.0031308 else 1.055 * (g ** (1 / 2.4)) - 0.055
@@ -218,6 +229,8 @@ def linear_to_RGB(r: float, g: float, b: float, curve: str) -> Triplet:
     return clamp(R), clamp(G), clamp(B)
 
 def xyY_to_XYZ(x: float, y: float, Y: float = 1.0) -> Triplet:
+    """Converts CIE XYZ to CIE xyY coordinates. x and y represent the chromaticity while Y is the luminance. Y is the same
+    as the Y in XYZ."""
     if y == 0:
         raise ValueError("y cannot be zero unless Y is also zero")
     X = x * Y / y
@@ -225,12 +238,18 @@ def xyY_to_XYZ(x: float, y: float, Y: float = 1.0) -> Triplet:
     return X, Y, Z
 
 def RGB_to_XYZ(R: float, G: float, B: float, space: RGBSpace = SRGB) -> Triplet:
+    """Converts RGB values in a given color space (SRGB, ADOBE_RGB, DISPLAY_P3 or REC_2020) to CIE XYZ, where Y = 1 for
+    white. RGB values are gamma corrected in the range [0, 1]."""
     r, g, b = RGB_to_linear(R, G, B, space.transfer_curve)
     M = RGB_to_XYZ_matrix(space)
     XYZ = M @ np.array([r, g, b], dtype=float)
     return tuple(float(v) for v in XYZ)
 
 def temp_to_XYZ(T: float, Y: float = 1.0, polynomial: bool = False) -> Triplet:
+    """Converts color temperature to CIE XYZ with the given Y value (defaults to 1).
+    If polynomial is True, it uses a polynomial approximation to compute x and y and converts xyY to XYZ. If it is False,
+    it uses Planck's law to determine the spectral power distribution and CIE color-matching functions to convert this to
+    XYZ."""
     if T < 800:
         raise ValueError("Temperature must be at or above the Draper point (800 K)")
     t = min(T, 1e15) # reduce "infinite" temperature to 1e15 to make calculation possible
@@ -255,8 +274,10 @@ def temp_to_XYZ(T: float, Y: float = 1.0, polynomial: bool = False) -> Triplet:
         return float(X0 / Y0) * Y, Y, float(Z0 / Y0) * Y
 
 def daylight_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
+    """Converts a correlated color temperature along the daylight locus (which includes illuminants D50, D55 and D65)
+    to a CIE XYZ coordinate with the given Y value. T must be between 4000 and 25000 inclusive."""
     if 4000 <= T <= 25000:
-        if T <= 7000:
+        if T < 7000:
             x = 0.244063 + 99.11/T + 2967800/T**2 - 4.607e9/T**3
         else:
             x = 0.23704 + 247.48/T + 1901800/T**2 - 2.0064e9/T**3
@@ -266,7 +287,8 @@ def daylight_to_XYZ(T: float, Y: float = 1.0) -> Triplet:
     X, _, Z = xyY_to_XYZ(x, y, Y)
     return X, Y, Z
 
-def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet: 
+def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet:
+    """Converts CIE Lab coordinates to XYZ. L is in the range 0-100."""
     Xn, Yn, Zn = xyY_to_XYZ(*white)
     fy = (L + 16) / 116
     fx = fy + a / 500
@@ -278,6 +300,7 @@ def Lab_to_XYZ(L: float, a: float, b: float, white: Point = D65) -> Triplet:
     return X, Y, Z
 
 def XYZ_to_uv_prime(X: float, Y: float, Z: float) -> Point:
+    """Converts XYZ to u'v', used as a helper function in Luv_to_XYZ and XYZ_to_Luv functions, and to calculate CCT/Duv."""
     denom = X + 15*Y + 3*Z
     if denom == 0:
         return 0.0, 0.0
@@ -285,6 +308,7 @@ def XYZ_to_uv_prime(X: float, Y: float, Z: float) -> Point:
         return 4*X/denom, 9*Y/denom
 
 def Luv_to_XYZ(L: float, u_star: float, v_star: float, white: Point = D65) -> Triplet:
+    """Converts CIE Luv coordinates to XYZ. L is in the range 0-100."""
     if L == 0:
         return 0.0, 0.0, 0.0
     Xn, Yn, Zn = xyY_to_XYZ(*white)
@@ -301,6 +325,8 @@ def Luv_to_XYZ(L: float, u_star: float, v_star: float, white: Point = D65) -> Tr
     return X, Y, Z   
 
 def spectral_to_XYZ(wavelength_nm: float, normalize: bool = False) -> Triplet:
+    """Given wavelength in nanometers, returns the CIE XYZ coordinates of the spectral color. If normalize is set to True,
+    Y is set to a constant value of 1, otherwise Y is the luminance of the particular wavelength relative to 555 nm light."""
     if wavelength_nm < WAVELENGTHS_NM[0] or wavelength_nm > WAVELENGTHS_NM[-1]:
         raise ValueError("Wavelength out of range")
     X = np.interp(wavelength_nm, WAVELENGTHS_NM, XBAR)
@@ -311,6 +337,8 @@ def spectral_to_XYZ(wavelength_nm: float, normalize: bool = False) -> Triplet:
     return float(X), float(Y), float(Z)
 
 def XYZ_to_RGB(X: float, Y: float, Z: float, space: RGBSpace = SRGB) -> tuple[Triplet, bool, bool]:
+    """Converts XYZ to RGB (gamma-corrected in range 0-1) in a given RGB color space (either SRGB, ADOBE_RGB, DISPLAY_P3
+    or REC_2020)."""
     XYZ = np.array([X, Y, Z], dtype=float)
     M = RGB_to_XYZ_matrix(space)
     M_inv = np.linalg.inv(M)
@@ -339,6 +367,8 @@ def XYZ_to_RGB(X: float, Y: float, Z: float, space: RGBSpace = SRGB) -> tuple[Tr
     return (R, G, B), out_of_gamut, max_bright
 
 def XYZ_to_xyY(X: float, Y: float, Z: float) -> Triplet:
+    """Converts CIE xyY to CIE XYZ coordinates. x and y represent the chromaticity while Y is the luminance. Y is the same
+    as the Y in XYZ."""
     if X + Y + Z == 0:
         return 1/3, 1/3, Y # 1/3, 1/3 is the xy chromaticity of an equal SPD across the visible spectrum
     x = X / (X + Y + Z)
@@ -346,6 +376,7 @@ def XYZ_to_xyY(X: float, Y: float, Z: float) -> Triplet:
     return x, y, Y
 
 def XYZ_to_Lab(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
+    """Converts XYZ to Lab coordinates, where L ranges from 0 to 100."""
     Xn, Yn, Zn = xyY_to_XYZ(*white)
     xr = X / Xn
     yr = Y / Yn
@@ -360,6 +391,7 @@ def XYZ_to_Lab(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
     return L, a_star, b_star
 
 def XYZ_to_Luv(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
+    """Converts XYZ to Luv coordinates, where L ranges from 0 to 100."""
     if Y == 0:
         return 0.0, 0.0, 0.0
     Xn, Yn, Zn = xyY_to_XYZ(*white)
@@ -373,6 +405,10 @@ def XYZ_to_Luv(X: float, Y: float, Z: float, white: Point = D65) -> Triplet:
     return L, u_star, v_star
 
 def XYZ_to_CCT_Duv(X: float, Y: float, Z: float) -> Point:
+    """Given an XYZ coordinate, calculates the correlated color temperature and Duv. Returns a tuple of 2 floats: (CCT, Duv).
+    Correlated color temperature is the temperature of a blackbody whose color is closest to the given color. Duv measures
+    its deviation from blackbody color - positive or negative Duv means the color is more green or purple, respectively, than
+    its nearest blackbody."""
     u, v = XYZ_to_uv_prime(X, Y, Z)
     v *= 2/3
     Tmin = 800.0 # Draper point, where blackbody radiation starts to become visible
