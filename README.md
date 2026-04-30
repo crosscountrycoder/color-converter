@@ -111,6 +111,25 @@ If the argument `adobe`, `p3`, `srgb` or `rec2020` is added after the file name,
 respective color space. Since the default color space for PNG images is sRGB, the only difference between `hsv_circle.png` and
 `hsv_circle_srgb.png` is that the latter has an ICC profile specifying its color space.
 
+# polynomial_fit.py and polynomial_test.py
+
+Generates a polynomial approximation for CIE xy coordinates based on reciprocal temperature. The formula generated is as follows,
+where T is the temperature in kelvins:
+```
+if 800 <= T < 1661: 
+    x = 0.12790668 + 1311.3574/T - 1335109.8/T**2 + 6.9429482e8/T**3 - 1.4571589e11/T**4
+    y = 0.35946988 + 477.95393/T - 1062716.0/T**2 + 7.5671541e8/T**3 - 1.8700243e11/T**4 
+elif 1661 <= T < 4328: 
+    x = 0.21594484 + 460.83273/T + 1497568.7/T**2 - 3.3177634e9/T**3 + 1.9306612e12/T**4 
+    y = 0.15480888 + 1394.6527/T - 2259297.6/T**2 + 8.4916936e8/T**3 + 3.1769991e11/T**4 
+elif T >= 4328: 
+    x = 0.23994527 + 246.81976/T + 1707275.0/T**2 - 5.4391967e8/T**3 - 5.0736771e12/T**4 
+    y = 0.23417818 + 359.64997/T + 2585341.6/T**2 - 8.1436004e9/T**3 + 4.5501218e12/T**4
+```
+This quartic formula works for any temperature above 800 K (the Draper point), and is continuous to 5 decimal places at its 
+breakpoints. The maximum error in CIE xy coordinates is 0.00017207 at T = 4328. This is much more accurate than the cubic spline approximation in color_converter.py (adopted from the Journal of the Korean Physical Society) which has a max error of 0.00053535
+at T = 2592.
+
 ## CSV files
 
 `CIE_xyz_1931_2deg.csv` shows the XYZ coordinates of each spectral color, with Y specifying brightness relative to 555 nm (the

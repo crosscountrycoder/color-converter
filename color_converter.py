@@ -252,5 +252,6 @@ if __name__ == "__main__":
         s += f"\nWarning: Color not in sRGB gamut. The displayed value has been moved towards the D65 white point."
     if br:
         s += f"\nWarning: Specified color is above maximum sRGB brightness. Displayed value is darkened (Y value lowered)."
+    s += "\nNote: color_converter.py is deprecated. Use color_converter_2.py"
     s += "\033[0m"
     print(s)

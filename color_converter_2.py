@@ -235,10 +235,10 @@ def temp_to_XYZ(T: float, Y: float = 1.0, polynomial: bool = False) -> Triplet:
         raise ValueError("Temperature must be at or above the Draper point (800 K)")
     t = min(T, 1e15) # reduce "infinite" temperature to 1e15 to make calculation possible
     if polynomial: # Use polynomial approximation calculated with polynomial_fit.py
-        if t <= 1661:
+        if t < 1661:
             x = 0.12790668 + 1311.3574/t - 1335109.8/t**2 + 6.9429482e8/t**3 - 1.4571589e11/t**4
             y = 0.35946988 + 477.95393/t - 1062716.0/t**2 + 7.5671541e8/t**3 - 1.8700243e11/t**4
-        elif t <= 4328:
+        elif t < 4328:
             x = 0.21594484 + 460.83273/t + 1497568.7/t**2 - 3.3177634e9/t**3 + 1.9306612e12/t**4
             y = 0.15480888 + 1394.6527/t - 2259297.6/t**2 + 8.4916936e8/t**3 + 3.1769991e11/t**4
         else:
