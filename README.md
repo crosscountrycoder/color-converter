@@ -101,7 +101,7 @@ while being more precise.
 
 ## hsv_circle.py
 
-This file requires the third-party `numpy` library, which can be installed using `pip install pillow`.
+This file requires the third-party `PIL` library, which can be installed using `pip install pillow`.
 
 This file produces `hsv_circle.png`, the circular face at the top of the HSV color cone/cylinder. Hue is the angle clockwise from
 top, saturation is distance from center, and value is a constant 1, so the image contains all full-brightness sRGB colors. Any
