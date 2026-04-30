@@ -111,7 +111,7 @@ If the argument `adobe`, `p3`, `srgb` or `rec2020` is added after the file name,
 respective color space. Since the default color space for PNG images is sRGB, the only difference between `hsv_circle.png` and
 `hsv_circle_srgb.png` is that the latter has an ICC profile specifying its color space.
 
-# polynomial_fit.py and polynomial_test.py
+## polynomial_fit.py and polynomial_test.py
 
 Generates a polynomial approximation for CIE xy coordinates based on reciprocal temperature. The formula generated is as follows,
 where T is the temperature in kelvins:
