@@ -48,7 +48,8 @@ white point which corresponds to RGB(255, 255, 255) in sRGB.
 `python3 color_converter_2.py Lab <L> <a> <b>`: Sets the color to the given coordinate in CIE Luv color space.
 
 `python3 color_converter_2.py spectral <wavelength> [n]`: Sets the color to the spectral color of the given wavelength in
-nanometers. If the letter `n` is added after the argument, the brightness is set to its maximum brightness.
+nanometers. Wavelength is assumed to be in vacuum. If the letter `n` is added after the argument, the brightness is set to its 
+maximum brightness.
 
 ## Output of color_converter_2.py
 For any input, the program outputs the following:

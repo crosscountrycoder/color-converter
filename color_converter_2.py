@@ -325,8 +325,8 @@ def Luv_to_XYZ(L: float, u_star: float, v_star: float, white: Point = D65) -> Tr
     return X, Y, Z   
 
 def spectral_to_XYZ(wavelength_nm: float, normalize: bool = False) -> Triplet:
-    """Given wavelength in nanometers, returns the CIE XYZ coordinates of the spectral color. If normalize is set to True,
-    Y is set to a constant value of 1, otherwise Y is the luminance of the particular wavelength relative to 555 nm light."""
+    """Given wavelength in nanometers (in vacuum), returns the CIE XYZ coordinates of the spectral color. If normalize is set
+    to True, Y is set to 1, otherwise Y is the luminance of the particular wavelength relative to 555 nm light."""
     if wavelength_nm < WAVELENGTHS_NM[0] or wavelength_nm > WAVELENGTHS_NM[-1]:
         raise ValueError("Wavelength out of range")
     X = np.interp(wavelength_nm, WAVELENGTHS_NM, XBAR)
